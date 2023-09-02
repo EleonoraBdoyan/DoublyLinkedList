@@ -1,0 +1,180 @@
+class ListNode:
+
+    def __init__(self, value):
+        self.value = value
+        self.prev = None
+        self.next = None
+
+
+class DoublyLinkedList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+
+    def is_empty(self):
+        return self.head is None
+
+    def push_front(self, value):
+        new_node = ListNode(value)
+        if self.is_empty():
+            self.head = self.tail = new_node
+        else:
+            self.head.prev = new_node
+            new_node.next = self.head
+            self.head = new_node
+
+    def pop_front(self):
+        if self.is_empty():
+            raise IndexError("pop from empty doubly linked list")
+        value = self.head.value
+        if self.head == self.tail:
+            self.head = self.tail = None
+        else:
+            self.head = self.head.next
+            self.head.prev = None
+        return value
+
+    def push_back(self, value):
+        if self.is_empty():
+            self.push_front(value)
+        else:
+            new_node = ListNode(value)
+            self.tail.next = new_node
+            new_node.prev = self.tail
+            self.tail = new_node
+
+    def pop_back(self):
+        if self.is_empty():
+            raise IndexError("pop from empty doubly linked list")
+        value = self.tail.value
+        if self.head == self.tail:
+            self.head = self.tail = None
+        else:
+            self.tail = self.tail.prev
+            self.tail.next = None
+        return value
+
+    def clear(self):
+        self.head = self.tail = None
+
+    def size(self):
+        length = 0
+        cur = self.head
+        while cur:
+            length += 1
+            cur = cur.next
+        return length
+
+    def print_front(self):
+        if not self.is_empty():
+            cur = self.head
+            while cur:
+                print(cur.value, end=",")
+                cur = cur.next
+        else:
+            print("The doubly linked list is empty.")
+
+    def print_back(self):
+        if not self.is_empty():
+            cur = self.tail
+            while cur:
+                print(cur.value, end=",")
+                cur = cur.prev
+        else:
+            print("The doubly linked list is empty.")
+
+    def remove(self, target):
+        cur = self.head
+        while cur:
+            if cur.value == target:
+                if cur == self.head:
+                    self.pop_front()
+                elif cur == self.tail:
+                    self.pop_back()
+                else:
+                    cur.prev.next = cur.next
+                    cur.next.prev = cur.prev
+                return
+            cur = cur.next
+        raise ValueError(f"{target} is not in doubly linked list")
+
+    def insert(self, index, value):
+        if index < 0 or index > self.size():
+            raise IndexError("Index out of range")
+        if index == 0:
+            self.push_front(value)
+        elif index == self.size():
+            self.push_back(value)
+        else:
+            new_node = Node(value)
+            current = self.head
+            for _ in range(index - 1):
+                current = current.next
+            new_node.next = current.next
+            new_node.prev = current
+            current.next.prev = new_node
+            current.next = new_node
+
+    def get_node(self, index):
+        if index < 0 or index >= self.size():
+            raise IndexError("Index out of range")
+        current = self.head
+        for _ in range(index):
+            current = current.next
+        return current
+
+    def reverse(self):
+        current = self.head
+        while current:
+            current.prev, current.next = current.next, current.prev
+            current = current.prev
+        self.head, self.tail = self.tail, self.head
+
+    def merge_sort(self, head):
+        if not head or not head.next:
+            return head
+        middle = self.find_middle(head)
+        left_head = head
+        right_head = middle.next
+        middle.next = None
+        left_sorted = self.merge_sort(left_head)
+        right_sorted = self.merge_sort(right_head)
+        return self.merge(left_sorted, right_sorted)
+
+    def find_middle(self, head):
+        slow = head
+        fast = head
+        while fast.next and fast.next.next:
+            slow = slow.next
+            fast = fast.next.next
+        return slow
+
+    def merge(self, left, right):
+        dummy = ListNode(None)
+        tail = dummy
+        while left and right:
+            if left.value < right.value:
+                tail.next = left
+                left.prev = tail
+                left = left.next
+            else:
+                tail.next = right
+                right.prev = tail
+                right = right.next
+            tail = tail.next
+        while left:
+            tail.next = left
+            left.prev = tail
+            left = left.next
+            tail = tail.next
+        while right:
+            tail.next = right
+            right.prev = tail
+            right = right.next
+            tail = tail.next
+        self.tail = tail
+        result = dummy.next
+        self.head = result
+        if result:
+            result.prev = None
+        return result
