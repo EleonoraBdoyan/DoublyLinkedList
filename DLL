@@ -178,3 +178,120 @@ class DoublyLinkedList:
         if result:
             result.prev = None
         return result
+
+class SelfOrganizingLinkedList(DoublyLinkedList):
+    def __init__(self):
+        super().__init__()
+
+    def move_to_front(self, target):
+        cur = self.head
+        while cur:
+            if cur.value == target:
+                if cur == self.head:
+                    return
+                elif cur == self.tail:
+                    cur.prev.next = None
+                    self.tail = cur.prev
+                else:
+                    cur.prev.next = cur.next
+                    cur.next.prev = cur.prev
+                self.push_front(target)
+                return
+            cur = cur.next
+
+    def search(self, target):
+        cur = self.head
+        while cur:
+            if cur.value == target:
+                self.move_to_front(target)
+                return True
+            cur = cur.next
+        return False
+
+
+class Node:
+    def __init__(self, value):
+        self.value = value
+        self.prev = None
+        self.next = None
+        self.lesser = None
+        self.greater = None
+
+
+class FrankensteinList:
+    def __init__(self):
+        self.head = None
+        self.tail = None
+        self.asc_head = None
+        self.desc_head = None
+
+    def is_empty(self):
+        return self.head is None
+
+    def insert(self, value):
+        new_node = Node(value)
+        if self.is_empty():
+            self.head = self.tail = new_node
+            self.asc_head = self.desc_head = new_node
+        else:
+            cur = self.asc_head
+            while cur and cur.value < value and cur.greater:
+                cur = cur.greater
+
+            if cur and cur.value < value:
+                new_node.greater = cur.greater
+                if cur.greater:
+                    cur.greater.lesser = new_node
+                cur.greater = new_node
+                new_node.lesser = cur
+                if not new_node.greater:
+                    self.desc_head = new_node
+            else:
+                new_node.lesser = cur.lesser
+                if cur.lesser:
+                    cur.lesser.greater = new_node
+                else:
+                    self.asc_head = new_node
+                new_node.greater = cur
+                cur.lesser = new_node
+
+            self.tail.next = new_node
+            new_node.prev = self.tail
+            self.tail = new_node
+
+    def remove(self, value):
+        cur = self.head
+        while cur:
+            if cur.value == value:
+                if cur.lesser:
+                    cur.lesser.greater = cur.greater
+                else:
+                    self.asc_head = cur.greater
+                if cur.greater:
+                    cur.greater.lesser = cur.lesser
+                else:
+                    self.desc_head = cur.lesser
+                if cur.prev:
+                    cur.prev.next = cur.next
+                else:
+                    self.head = cur.next
+                if cur.next:
+                    cur.next.prev = cur.prev
+                else:
+                    self.tail = cur.prev
+                return
+            cur = cur.next
+
+    def print_asc(self):
+        cur = self.asc_head
+        while cur:
+            print(cur.value, end=", ")
+            cur = cur.greater
+        print()
+
+    def print_desc(self):
+        cur = self.desc_head
+        while cur:
+            print(cur.value, end=", ")
+            cur = cur.lesser
+        print()
